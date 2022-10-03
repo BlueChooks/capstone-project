@@ -1,0 +1,30 @@
+:root {
+    --red: #E64520;
+    --yellow: #FBBE17;
+    --green: #ABC710;
+    --blue: #41B8E6;
+    --purple: #844591;
+
+    --primary: var(--green);
+    --secondary: var(--yellow);
+
+    --stdTrans: .2s
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+}
+
+svg {
+    border: 1px black solid;
+    width: auto;
+    height: 500px;
+    transform:scaleX(var(--direction));
+}
