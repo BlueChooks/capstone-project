@@ -32,13 +32,16 @@ class RippleBoard extends HTMLElement {
             flipper.style.setProperty('--randCol', this.randCol());
 
             flipper.addEventListener('click', e => {
-                this.flip(flipper, this.flipDelay);
+                // this.flip(flipper, this.flipDelay);
+                this.propagateRings(e);
 
             });
         });
     }
 
-    flip(element, delay) {
+    flip(element) {
+        console.log('flip');
+    // flip(element, delay) {
         if (element.classList.contains('flipped')) {
             element.classList.remove('flipped');
         } else {
@@ -46,27 +49,232 @@ class RippleBoard extends HTMLElement {
         }
     }
 
-    // centre is an event.clientX/event.clientY
-    // informs element, which is the flipper at that point
-    // calculate next corner by getting the getBoundingClientRect details and calculating one pixel out in given direction
-    getNextCorner(centre, direction, step) {
-        let nextPoint = {x: 0, y: 0};
-        switch(direction) {
-            case 'up left':
-                // nextPoint.x = -this.childSize;
-                nextPoint.x = centre.getBoundingClientRect().
+    getCorners(e) {
+        console.log('getCorners');
+        let el = document.elementFromPoint(e.clientX, e.clientY);
+        let corners = [
+            this.getNextFlipper(el, 'top left'),
+            this.getNextFlipper(el, 'top right'),
+            this.getNextFlipper(el, 'bottom right'),
+            this.getNextFlipper(el, 'bottom left')
+        ];
+        console.log('corners: ', corners);
+        return corners;
+    }
 
-                break;
+    getNextFlipper(currentElement, direction) {
+        console.log(`getNextFlipper(${direction})`);
+        // XY coords of current element edges (middle of edge)
+        let top = {x: currentElement.getBoundingClientRect().x + (this.childSize / 2), y: currentElement.getBoundingClientRect().y};
+        let bottom = {x: currentElement.getBoundingClientRect().x + (this.childSize / 2), y: currentElement.getBoundingClientRect().y + this.childSize};
+        let left = {x: currentElement.getBoundingClientRect().x, y: currentElement.getBoundingClientRect().y + (this.childSize / 2)};
+        let right = {x: currentElement.getBoundingClientRect().x + this.childSize, y: currentElement.getBoundingClientRect().y + (this.childSize / 2)};
+
+        let rect = currentElement.getBoundingClientRect();
+
+        switch(direction) {
+            case 'left':
+                return document.elementFromPoint(left.x - 1, left.y);
+            
+            case 'right':
+                return document.elementFromPoint(right.x + 1, right.y);
+
+            case 'up':
+                return document.elementFromPoint(top.x, top.y - 1);
+            
+            case 'down':
+                return document.elementFromPoint(bottom.x, bottom.y + 1);
+            
+            case 'top left':
+                return document.elementFromPoint(rect.x - 1, rect.y - 1);
+
+            case 'top right':
+                return document.elementFromPoint(rect.x + this.childSize + 1, rect.y - 1);
+
+            case 'bottom right':
+                return document.elementFromPoint(rect.x + this.childSize + 1, rect.y + this.childSize + 1);
+
+            case 'bottom left':
+                return document.elementFromPoint(rect.x - 1, rect.y + this.childSize + 1);
         }
     }
 
-    // /**
-    //  * Returns an array of flippers calculated from a given array of flippers.
-    //  * Get corners of given array, calculate next corner out, then output a new array based on those corners
-    //  */
-    // nextRing(arr) {
-    //     //
-    // }
+    getRing(corners) { // corners[] looks like [top left, top right, bottom right, bottom left]
+        console.log('getRing');
+        /**
+         * from given array of corners, take top left, step left (with getNextFlipper(el, left)) and push
+         * returned flipper to array until it reaches a flipper that already appears in corner array. Do same thing
+         * stepping down, then do same thing stepping right and up from bottom right corner
+         */
+        let flippers = [...corners];
+
+        let topUnfinished = true;
+        let bottomUnfinished = true;
+        let leftUnfinished = true;
+        let rightUnfinished = true;
+
+        // top
+        console.log('getting top ...');
+        if (!!corners[0]) {
+            let currentFlipper = corners[0];
+            
+            while (topUnfinished) {
+                let nextRight = this.getNextFlipper(currentFlipper, 'right');
+                
+                if (!!nextRight && !corners.includes(nextRight)) {
+                    flippers.push(nextRight);
+                    currentFlipper = nextRight;
+                } else {
+                    topUnfinished = false;
+                }
+            }
+
+        } else if (!!corners[1]) {
+            let currentFlipper = corners[1];
+
+            while (topUnfinished) {
+                let nextLeft = this.getNextFlipper(currentFlipper, 'left');
+
+                if(!!nextLeft && !corners.includes(nextLeft) && nextLeft.classList.contains('flipper')) {
+                    flippers.push(nextLeft);
+                    currentFlipper = nextLeft;
+                } else {
+                    topUnfinished = false;
+                }
+            }
+        } else {
+            console.log('no available corners on top');
+            topUnfinished = false;
+        }
+
+        // bottom
+        console.log('getting bottom ...');
+        if (!!corners[2]) {
+            let currentFlipper = corners[2];
+
+            while (bottomUnfinished) {
+                let nextLeft = this.getNextFlipper(currentFlipper, 'left');
+    
+                if(!!nextLeft && !corners.includes(nextLeft) && nextLeft.classList.contains('flipper')) {
+                    flippers.push(nextLeft);
+                    currentFlipper = nextLeft;
+                } else {
+                    bottomUnfinished = false;
+                    currentFlipper = corners[2];
+                }
+            }
+        } else if (!!corners[3]) {
+            let currentFlipper = corners[3];
+
+            while (bottomUnfinished) {
+                let nextRight = this.getNextFlipper(currentFlipper, 'right');
+
+                if(!!nextRight && !corners.includes(nextRight) && nextRight.classList.contains('flipper')) {
+                    flippers.push(nextRight);
+                    currentFlipper = nextRight;
+                } else {
+                    bottomUnfinished = false;
+                }
+            }
+        } else {
+            console.log('no available corners on bottom');
+            bottomUnfinished = false;
+        }
+
+        // left
+        console.log('getting left ...');
+        if (!!corners[0]) {
+            let currentFlipper = corners[0];
+
+            while (leftUnfinished) {
+                let nextDown = this.getNextFlipper(currentFlipper, 'down');
+    
+                if (!!nextDown && !corners.includes(nextDown) && nextDown.classList.contains('flipper')) {
+                    flippers.push(nextDown);
+                    currentFlipper = nextDown;
+                } else {
+                    leftUnfinished = false;
+                }
+            }
+        } else if (!!corners[3]) {
+            let currentFlipper = corners[3];
+
+            while (leftUnfinished) {
+                let nextUp = this.getNextFlipper(currentFlipper, 'up');
+    
+                if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('flipper')) {
+                    flippers.push(nextUp);
+                    currentFlipper = nextUp;
+                } else {
+                    leftUnfinished = false;
+                }
+            }
+        } else {
+            console.log('no available corners on left');
+            leftUnfinished = false;
+        }
+
+        // right
+        console.log('getting right ...');
+        if (!!corners[2]) {
+            let currentFlipper = corners[2];
+
+            while (rightUnfinished) {
+                let nextUp = this.getNextFlipper(currentFlipper, 'up');
+    
+                if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('flipper')) {
+                    flippers.push(nextUp);
+                    currentFlipper = nextUp;
+                } else {
+                    rightUnfinished = false;
+                }
+            }
+        } else if (!!corners[1]) {
+            let currentFlipper = corners[1];
+
+            while (rightUnfinished) {
+                let nextDown = this.getNextFlipper(currentFlipper, 'down');
+    
+                if (!!nextDown && !corners.includes(nextDown) && nextUp.classList.contains('flipper')) {
+                    flippers.push(nextDown);
+                    currentFlipper = nextDown;
+                } else {
+                    rightUnfinished = false;
+                }
+            }
+        } else {
+            console.log('no available corners on right');
+            rightUnfinished = false;
+        }
+
+
+
+        // while (rightUnfinished) {
+        //     let nextUp = this.getNextFlipper(currentFlipper, 'up');
+
+        //     if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('flipper')) {
+        //         flippers.push(nextUp);
+        //         currentFlipper = nextUp;
+        //     } else {
+        //         rightUnfinished = false;
+        //     }
+        // }
+
+        console.log(flippers);
+        return flippers;
+    }
+
+    propagateRings(e) {
+        console.log('propagateRings');
+        /**
+         * get corners
+         * feed to getRing
+         * flip all in getRing
+         */
+
+        let ring = this.getRing(this.getCorners(e));
+        ring.forEach(flipper => this.flip(flipper));
+    }
     
     // =====----- // -----===== //
     calculateNumRows() {
@@ -123,20 +331,20 @@ class RippleBoard extends HTMLElement {
 
     getSurrounds(event) {
         let surrounds = [];
-        if (document.elementFromPoint((event.clientX), (event.clientY - this.childSize)) && document.elementFromPoint((event.clientX), (event.clientY - this.childSize)).classList.contains('flipper')) {
-            surrounds.push(document.elementFromPoint((event.clientX), (event.clientY - this.childSize)));
+        if (document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)) && document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)).classList.contains('flipper')) {
+            surrounds.push(document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)));
         }
 
-        if (document.elementFromPoint((event.clientX), (event.clientY + this.childSize)) && document.elementFromPoint((event.clientX), (event.clientY + this.childSize)).classList.contains('flipper')) {
-            surrounds.push(document.elementFromPoint((event.clientX), (event.clientY + this.childSize)));
+        if (document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)) && document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)).classList.contains('flipper')) {
+            surrounds.push(document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)));
         }
 
-        if (document.elementFromPoint((event.clientX - this.childSize), (event.clientY)) && document.elementFromPoint((event.clientX - this.childSize), (event.clientY)).classList.contains('flipper')) {
-            surrounds.push(document.elementFromPoint((event.clientX - this.childSize), (event.clientY)));
+        if (document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)) && document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)).classList.contains('flipper')) {
+            surrounds.push(document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)));
         }
 
-        if (document.elementFromPoint((event.clientX + this.childSize), (event.clientY)) && document.elementFromPoint((event.clientX + this.childSize), (event.clientY)).classList.contains('flipper')) {
-            surrounds.push(document.elementFromPoint((event.clientX + this.childSize), (event.clientY)));
+        if (document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)) && document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)).classList.contains('flipper')) {
+            surrounds.push(document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)));
         }
         return surrounds;
     }
