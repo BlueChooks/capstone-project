@@ -5,6 +5,7 @@ class RippleBoard extends HTMLElement {
         this.resizeDelay = 500;
         this.flipDelay = 300;
         this.childSize = 30;
+        this.spreadMax = 5;
 
         this.innerWidth = this.calculateInnerWidth();
         this.innerHeight = this.calculateInnerHeight();
@@ -32,7 +33,6 @@ class RippleBoard extends HTMLElement {
             flipper.style.setProperty('--randCol', this.randCol());
 
             flipper.addEventListener('click', e => {
-                // this.flip(flipper, this.flipDelay);
                 this.propagateRings(e);
 
             });
@@ -40,67 +40,87 @@ class RippleBoard extends HTMLElement {
     }
 
     flip(element) {
-        console.log('flip');
-    // flip(element, delay) {
-        if (element.classList.contains('flipped')) {
+        // console.log('flip');
+        
+        if (!!element && element.classList.contains('flipped')) {
             element.classList.remove('flipped');
-        } else {
+        } else if (!!element) {
             element.classList.add('flipped');
+
+            setTimeout(() => {
+                element.classList.remove('flipped')
+            }, this.flipDelay);
+        } else {
+            // console.log('no flipper');
         }
+        // setTimeout(() => {
+        // }, this.flipDelay);
     }
 
-    getCorners(e) {
-        console.log('getCorners');
+    getCorners(e, step) { // click event, 
+        // console.log('getCorners');
         let el = document.elementFromPoint(e.clientX, e.clientY);
         let corners = [
-            this.getNextFlipper(el, 'top left'),
-            this.getNextFlipper(el, 'top right'),
-            this.getNextFlipper(el, 'bottom right'),
-            this.getNextFlipper(el, 'bottom left')
+            this.getNextFlipper(el, 'top left', step),
+            this.getNextFlipper(el, 'top right', step),
+            this.getNextFlipper(el, 'bottom right', step),
+            this.getNextFlipper(el, 'bottom left', step)
         ];
-        console.log('corners: ', corners);
         return corners;
     }
 
-    getNextFlipper(currentElement, direction) {
-        console.log(`getNextFlipper(${direction})`);
+    getNextFlipper(currentElement, direction, step) {
         // XY coords of current element edges (middle of edge)
         let top = {x: currentElement.getBoundingClientRect().x + (this.childSize / 2), y: currentElement.getBoundingClientRect().y};
         let bottom = {x: currentElement.getBoundingClientRect().x + (this.childSize / 2), y: currentElement.getBoundingClientRect().y + this.childSize};
         let left = {x: currentElement.getBoundingClientRect().x, y: currentElement.getBoundingClientRect().y + (this.childSize / 2)};
         let right = {x: currentElement.getBoundingClientRect().x + this.childSize, y: currentElement.getBoundingClientRect().y + (this.childSize / 2)};
 
+        let offset = 5;
+
         let rect = currentElement.getBoundingClientRect();
+        let nextFlipper;
 
         switch(direction) {
             case 'left':
-                return document.elementFromPoint(left.x - 1, left.y);
+                nextFlipper = document.elementFromPoint(left.x - offset, left.y);
+                break;
             
             case 'right':
-                return document.elementFromPoint(right.x + 1, right.y);
+                nextFlipper = document.elementFromPoint(right.x + offset, right.y);
+                break;
 
             case 'up':
-                return document.elementFromPoint(top.x, top.y - 1);
+                nextFlipper = document.elementFromPoint(top.x, top.y - offset);
+                break;
             
             case 'down':
-                return document.elementFromPoint(bottom.x, bottom.y + 1);
+                nextFlipper = document.elementFromPoint(bottom.x, bottom.y + offset);
+                break;
             
             case 'top left':
-                return document.elementFromPoint(rect.x - 1, rect.y - 1);
+                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize));
+                break;
 
             case 'top right':
-                return document.elementFromPoint(rect.x + this.childSize + 1, rect.y - 1);
+                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize));
+                break;
 
             case 'bottom right':
-                return document.elementFromPoint(rect.x + this.childSize + 1, rect.y + this.childSize + 1);
+                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize));
+                break;
 
             case 'bottom left':
-                return document.elementFromPoint(rect.x - 1, rect.y + this.childSize + 1);
+                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize));
+                break;
         }
+
+        // console.log(`getNextFlipper(${direction}) ->`, nextFlipper);
+        return nextFlipper;
     }
 
     getRing(corners) { // corners[] looks like [top left, top right, bottom right, bottom left]
-        console.log('getRing');
+        // console.log('getRing');
         /**
          * from given array of corners, take top left, step left (with getNextFlipper(el, left)) and push
          * returned flipper to array until it reaches a flipper that already appears in corner array. Do same thing
@@ -114,7 +134,7 @@ class RippleBoard extends HTMLElement {
         let rightUnfinished = true;
 
         // top
-        console.log('getting top ...');
+        // console.log('getting top ...');
         if (!!corners[0]) {
             let currentFlipper = corners[0];
             
@@ -143,12 +163,12 @@ class RippleBoard extends HTMLElement {
                 }
             }
         } else {
-            console.log('no available corners on top');
+            // console.log('no available corners on top');
             topUnfinished = false;
         }
 
         // bottom
-        console.log('getting bottom ...');
+        // console.log('getting bottom ...');
         if (!!corners[2]) {
             let currentFlipper = corners[2];
 
@@ -177,12 +197,12 @@ class RippleBoard extends HTMLElement {
                 }
             }
         } else {
-            console.log('no available corners on bottom');
+            // console.log('no available corners on bottom');
             bottomUnfinished = false;
         }
 
         // left
-        console.log('getting left ...');
+        // console.log('getting left ...');
         if (!!corners[0]) {
             let currentFlipper = corners[0];
 
@@ -210,12 +230,12 @@ class RippleBoard extends HTMLElement {
                 }
             }
         } else {
-            console.log('no available corners on left');
+            // console.log('no available corners on left');
             leftUnfinished = false;
         }
 
         // right
-        console.log('getting right ...');
+        // console.log('getting right ...');
         if (!!corners[2]) {
             let currentFlipper = corners[2];
 
@@ -235,7 +255,7 @@ class RippleBoard extends HTMLElement {
             while (rightUnfinished) {
                 let nextDown = this.getNextFlipper(currentFlipper, 'down');
     
-                if (!!nextDown && !corners.includes(nextDown) && nextUp.classList.contains('flipper')) {
+                if (!!nextDown && !corners.includes(nextDown) && nextDown.classList.contains('flipper')) {
                     flippers.push(nextDown);
                     currentFlipper = nextDown;
                 } else {
@@ -243,37 +263,26 @@ class RippleBoard extends HTMLElement {
                 }
             }
         } else {
-            console.log('no available corners on right');
+            // console.log('no available corners on right');
             rightUnfinished = false;
         }
 
-
-
-        // while (rightUnfinished) {
-        //     let nextUp = this.getNextFlipper(currentFlipper, 'up');
-
-        //     if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('flipper')) {
-        //         flippers.push(nextUp);
-        //         currentFlipper = nextUp;
-        //     } else {
-        //         rightUnfinished = false;
-        //     }
-        // }
-
-        console.log(flippers);
         return flippers;
     }
 
     propagateRings(e) {
-        console.log('propagateRings');
-        /**
-         * get corners
-         * feed to getRing
-         * flip all in getRing
-         */
+        // console.log('propagateRings');
+        let propagations = 0;
+        const flipRingInterval = setInterval(() => {
+            if (propagations < this.spreadMax) {
+                let ring = this.getRing(this.getCorners(e, propagations));
+                ring.forEach(flipper => this.flip(flipper));
+                propagations++;
+            } else {
+                clearInterval(flipRingInterval);
+            }
+        }, this.flipDelay);
 
-        let ring = this.getRing(this.getCorners(e));
-        ring.forEach(flipper => this.flip(flipper));
     }
     
     // =====----- // -----===== //
