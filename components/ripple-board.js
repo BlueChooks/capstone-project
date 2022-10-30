@@ -23,16 +23,16 @@ class RippleBoard extends HTMLElement {
         this.numCols = this.calculateNumCols();
         for (let i = 0; i < this.numRows; i++) {
             for (let j = 0; j < this.numCols; j++) {
-                this.querySelector('.flip-container').innerHTML += `<div class="flipper" style="--randCol:${this.randCol()};--flipSize:${this.childSize}px;"></div>`;
+                this.querySelector('.flip-container').innerHTML += `<div class="cell" style="--randCol:${this.randCol()};--flipSize:${this.childSize}px;"></div>`;
             }
         }
 
-        let flippers = document.querySelectorAll('.flipper');
+        let cells = document.querySelectorAll('.cell');
 
-        flippers.forEach(flipper => {
-            flipper.style.setProperty('--randCol', this.randCol());
+        cells.forEach(cell => {
+            cell.style.setProperty('--randCol', this.randCol());
 
-            flipper.addEventListener('click', e => {
+            cell.addEventListener('click', e => {
                 this.propagateRings(e);
 
             });
@@ -42,16 +42,16 @@ class RippleBoard extends HTMLElement {
     flip(element) {
         // console.log('flip');
         
-        if (!!element && element.classList.contains('flipped')) {
-            element.classList.remove('flipped');
+        if (!!element && element.classList.contains('coloured')) {
+            element.classList.remove('coloured');
         } else if (!!element) {
-            element.classList.add('flipped');
+            element.classList.add('coloured');
 
             setTimeout(() => {
-                element.classList.remove('flipped')
+                element.classList.remove('coloured')
             }, this.flipDelay);
         } else {
-            // console.log('no flipper');
+            // console.log('no cell');
         }
         // setTimeout(() => {
         // }, this.flipDelay);
@@ -83,35 +83,35 @@ class RippleBoard extends HTMLElement {
 
         switch(direction) {
             case 'left':
-                nextFlipper = document.elementFromPoint(left.x - offset, left.y);
+                nextFlipper = document.elementFromPoint(left.x - offset, left.y).classList.contains('cell') ? document.elementFromPoint(left.x - offset, left.y) : null;
                 break;
             
             case 'right':
-                nextFlipper = document.elementFromPoint(right.x + offset, right.y);
+                nextFlipper = document.elementFromPoint(right.x + offset, right.y).classList.contains('cell') ? document.elementFromPoint(right.x + offset, right.y) : null;
                 break;
 
             case 'up':
-                nextFlipper = document.elementFromPoint(top.x, top.y - offset);
+                nextFlipper = document.elementFromPoint(top.x, top.y - offset).classList.contains('cell') ? document.elementFromPoint(top.x, top.y - offset) : null;
                 break;
             
             case 'down':
-                nextFlipper = document.elementFromPoint(bottom.x, bottom.y + offset);
+                nextFlipper = document.elementFromPoint(bottom.x, bottom.y + offset).classList.contains('cell') ? document.elementFromPoint(bottom.x, bottom.y + offset) : null;
                 break;
             
             case 'top left':
-                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize));
+                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)) : null;
                 break;
 
             case 'top right':
-                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize));
+                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)) : null;
                 break;
 
             case 'bottom right':
-                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize));
+                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) : null;
                 break;
 
             case 'bottom left':
-                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize));
+                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) : null;
                 break;
         }
 
@@ -123,10 +123,10 @@ class RippleBoard extends HTMLElement {
         // console.log('getRing');
         /**
          * from given array of corners, take top left, step left (with getNextFlipper(el, left)) and push
-         * returned flipper to array until it reaches a flipper that already appears in corner array. Do same thing
+         * returned cell to array until it reaches a cell that already appears in corner array. Do same thing
          * stepping down, then do same thing stepping right and up from bottom right corner
          */
-        let flippers = [...corners];
+        let cells = [...corners];
 
         let topUnfinished = true;
         let bottomUnfinished = true;
@@ -142,7 +142,7 @@ class RippleBoard extends HTMLElement {
                 let nextRight = this.getNextFlipper(currentFlipper, 'right');
                 
                 if (!!nextRight && !corners.includes(nextRight)) {
-                    flippers.push(nextRight);
+                    cells.push(nextRight);
                     currentFlipper = nextRight;
                 } else {
                     topUnfinished = false;
@@ -155,8 +155,8 @@ class RippleBoard extends HTMLElement {
             while (topUnfinished) {
                 let nextLeft = this.getNextFlipper(currentFlipper, 'left');
 
-                if(!!nextLeft && !corners.includes(nextLeft) && nextLeft.classList.contains('flipper')) {
-                    flippers.push(nextLeft);
+                if(!!nextLeft && !corners.includes(nextLeft) && nextLeft.classList.contains('cell')) {
+                    cells.push(nextLeft);
                     currentFlipper = nextLeft;
                 } else {
                     topUnfinished = false;
@@ -175,8 +175,8 @@ class RippleBoard extends HTMLElement {
             while (bottomUnfinished) {
                 let nextLeft = this.getNextFlipper(currentFlipper, 'left');
     
-                if(!!nextLeft && !corners.includes(nextLeft) && nextLeft.classList.contains('flipper')) {
-                    flippers.push(nextLeft);
+                if(!!nextLeft && !corners.includes(nextLeft) && nextLeft.classList.contains('cell')) {
+                    cells.push(nextLeft);
                     currentFlipper = nextLeft;
                 } else {
                     bottomUnfinished = false;
@@ -189,8 +189,8 @@ class RippleBoard extends HTMLElement {
             while (bottomUnfinished) {
                 let nextRight = this.getNextFlipper(currentFlipper, 'right');
 
-                if(!!nextRight && !corners.includes(nextRight) && nextRight.classList.contains('flipper')) {
-                    flippers.push(nextRight);
+                if(!!nextRight && !corners.includes(nextRight) && nextRight.classList.contains('cell')) {
+                    cells.push(nextRight);
                     currentFlipper = nextRight;
                 } else {
                     bottomUnfinished = false;
@@ -209,8 +209,8 @@ class RippleBoard extends HTMLElement {
             while (leftUnfinished) {
                 let nextDown = this.getNextFlipper(currentFlipper, 'down');
     
-                if (!!nextDown && !corners.includes(nextDown) && nextDown.classList.contains('flipper')) {
-                    flippers.push(nextDown);
+                if (!!nextDown && !corners.includes(nextDown) && nextDown.classList.contains('cell')) {
+                    cells.push(nextDown);
                     currentFlipper = nextDown;
                 } else {
                     leftUnfinished = false;
@@ -222,8 +222,8 @@ class RippleBoard extends HTMLElement {
             while (leftUnfinished) {
                 let nextUp = this.getNextFlipper(currentFlipper, 'up');
     
-                if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('flipper')) {
-                    flippers.push(nextUp);
+                if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('cell')) {
+                    cells.push(nextUp);
                     currentFlipper = nextUp;
                 } else {
                     leftUnfinished = false;
@@ -242,8 +242,8 @@ class RippleBoard extends HTMLElement {
             while (rightUnfinished) {
                 let nextUp = this.getNextFlipper(currentFlipper, 'up');
     
-                if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('flipper')) {
-                    flippers.push(nextUp);
+                if (!!nextUp && !corners.includes(nextUp) && nextUp.classList.contains('cell')) {
+                    cells.push(nextUp);
                     currentFlipper = nextUp;
                 } else {
                     rightUnfinished = false;
@@ -255,8 +255,8 @@ class RippleBoard extends HTMLElement {
             while (rightUnfinished) {
                 let nextDown = this.getNextFlipper(currentFlipper, 'down');
     
-                if (!!nextDown && !corners.includes(nextDown) && nextDown.classList.contains('flipper')) {
-                    flippers.push(nextDown);
+                if (!!nextDown && !corners.includes(nextDown) && nextDown.classList.contains('cell')) {
+                    cells.push(nextDown);
                     currentFlipper = nextDown;
                 } else {
                     rightUnfinished = false;
@@ -267,7 +267,7 @@ class RippleBoard extends HTMLElement {
             rightUnfinished = false;
         }
 
-        return flippers;
+        return cells;
     }
 
     propagateRings(e) {
@@ -276,7 +276,7 @@ class RippleBoard extends HTMLElement {
         const flipRingInterval = setInterval(() => {
             if (propagations < this.spreadMax) {
                 let ring = this.getRing(this.getCorners(e, propagations));
-                ring.forEach(flipper => this.flip(flipper));
+                ring.forEach(cell => this.flip(cell));
                 propagations++;
             } else {
                 clearInterval(flipRingInterval);
@@ -340,19 +340,19 @@ class RippleBoard extends HTMLElement {
 
     getSurrounds(event) {
         let surrounds = [];
-        if (document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)) && document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)).classList.contains('flipper')) {
+        if (document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)) && document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)).classList.contains('cell')) {
             surrounds.push(document.document.elementFromPoint((event.clientX), (event.clientY - this.childSize)));
         }
 
-        if (document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)) && document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)).classList.contains('flipper')) {
+        if (document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)) && document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)).classList.contains('cell')) {
             surrounds.push(document.document.elementFromPoint((event.clientX), (event.clientY + this.childSize)));
         }
 
-        if (document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)) && document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)).classList.contains('flipper')) {
+        if (document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)) && document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)).classList.contains('cell')) {
             surrounds.push(document.document.elementFromPoint((event.clientX - this.childSize), (event.clientY)));
         }
 
-        if (document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)) && document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)).classList.contains('flipper')) {
+        if (document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)) && document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)).classList.contains('cell')) {
             surrounds.push(document.document.elementFromPoint((event.clientX + this.childSize), (event.clientY)));
         }
         return surrounds;

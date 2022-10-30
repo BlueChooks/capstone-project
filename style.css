@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+
 :root {
     --red: #E64520;
     --yellow: #FBBE17;
@@ -15,6 +17,9 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 700;
+    /* text-transform: uppercase; */
 }
 
 body {
@@ -27,4 +32,73 @@ svg {
     width: auto;
     height: 500px;
     transform:scaleX(var(--direction));
+}
+
+/* =====-----  -----===== */
+ripple-board {
+    --flipBg: #fff;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--flipBg);
+    width: 100%;
+    height: 100%;
+}
+
+flip-board {
+    --flipBg: #fff;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--flipBg);
+    width: 100%;
+    height: 100%;
+}
+
+.flip-container {
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
+
+.flipper, .cell {
+    width: var(--flipSize);
+    height: var(--flipSize);
+    background-color: var(--flipBg);
+    transition: var(--stdTrans);
+    transform: rotate3d(-1, -1, 0, 0);
+    transform-style: preserve-3d;
+}
+
+.flipper::before, .flipper::after, .cell::before, .cell::after {
+    border: 1px solid var(--flipBg);
+}
+
+.flipper::before, .cell::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--flipBg);
+    backface-visibility: hidden;
+    z-index: 2;
+}
+
+.flipper::after, .cell::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--randCol);
+}
+
+.flipped, .coloured {
+    transform: rotate3d(-1, -1, 0, 180deg);
 }
