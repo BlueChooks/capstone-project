@@ -27,11 +27,25 @@ body {
     height: 100vh;
 }
 
-svg {
-    border: 1px black solid;
-    width: auto;
-    height: 500px;
-    transform:scaleX(var(--direction));
+h1 {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8vw;
+    color: #444;
+    opacity: 50%;
+    z-index: 100;
+    pointer-events: none;
+    transition: .8s;
+}
+
+h1.invisible {
+    opacity: 0;
 }
 
 /* =====-----  -----===== */

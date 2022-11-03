@@ -64,12 +64,24 @@
         </style>
     </head>
     <body>
+        <h1>click</h1>
         <ripple-board></ripple-board>
         <script src="./components/ripple-board.js"></script>
         <script>
             setInterval(() => {
                     window.location.reload();
                 }, 1000*60*60);
+
+                let promptCallback = () => {
+                document.querySelector('h1').classList.add('invisible');
+                document.removeEventListener('mousemove', promptCallback);
+                setTimeout(() => {
+                    document.querySelector('h1').classList.remove('invisible');
+                    document.addEventListener('mousemove', promptCallback);
+                }, 10000);
+            }
+
+            document.addEventListener('mousemove', promptCallback);
         </script>
     </body>
 </html>

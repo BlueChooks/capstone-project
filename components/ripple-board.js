@@ -83,35 +83,35 @@ class RippleBoard extends HTMLElement {
 
         switch(direction) {
             case 'left':
-                nextFlipper = document.elementFromPoint(left.x - offset, left.y).classList.contains('cell') ? document.elementFromPoint(left.x - offset, left.y) : null;
+                nextFlipper = !!document.elementFromPoint(left.x - offset, left.y) && document.elementFromPoint(left.x - offset, left.y).classList.contains('cell') ? document.elementFromPoint(left.x - offset, left.y) : null;
                 break;
             
             case 'right':
-                nextFlipper = document.elementFromPoint(right.x + offset, right.y).classList.contains('cell') ? document.elementFromPoint(right.x + offset, right.y) : null;
+                nextFlipper = !!document.elementFromPoint(right.x + offset, right.y) && document.elementFromPoint(right.x + offset, right.y).classList.contains('cell') ? document.elementFromPoint(right.x + offset, right.y) : null;
                 break;
 
             case 'up':
-                nextFlipper = document.elementFromPoint(top.x, top.y - offset).classList.contains('cell') ? document.elementFromPoint(top.x, top.y - offset) : null;
+                nextFlipper = !!document.elementFromPoint(top.x, top.y - offset) && document.elementFromPoint(top.x, top.y - offset).classList.contains('cell') ? document.elementFromPoint(top.x, top.y - offset) : null;
                 break;
             
             case 'down':
-                nextFlipper = document.elementFromPoint(bottom.x, bottom.y + offset).classList.contains('cell') ? document.elementFromPoint(bottom.x, bottom.y + offset) : null;
+                nextFlipper = !!document.elementFromPoint(bottom.x, bottom.y + offset) && document.elementFromPoint(bottom.x, bottom.y + offset).classList.contains('cell') ? document.elementFromPoint(bottom.x, bottom.y + offset) : null;
                 break;
             
             case 'top left':
-                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)) : null;
+                nextFlipper = !!document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)) && document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y - offset - (step * this.childSize)) : null;
                 break;
 
             case 'top right':
-                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)) : null;
+                nextFlipper = !!document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)) && document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y - offset - (step * this.childSize)) : null;
                 break;
 
             case 'bottom right':
-                nextFlipper = document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) : null;
+                nextFlipper = !!document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) && document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x + this.childSize + offset + (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) : null;
                 break;
 
             case 'bottom left':
-                nextFlipper = document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) : null;
+                nextFlipper = !!document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) && document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)).classList.contains('cell') ? document.elementFromPoint(rect.x - offset - (step * this.childSize), rect.y + this.childSize + offset + (step * this.childSize)) : null;
                 break;
         }
 
